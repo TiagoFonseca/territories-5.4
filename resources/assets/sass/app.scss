@@ -1,0 +1,70 @@
+
+// Fonts
+@import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
+
+// materialize variables 
+
+@import "node_modules/materialize-css/sass/components/_color";
+
+
+// end of materialize variables
+
+// Variables
+//@import "_variables";
+$primary-color: color("teal", "lighten-2") !default;
+$primary-color-light: lighten($primary-color, 15%) !default;
+$primary-color-dark: darken($primary-color, 15%) !default;
+
+$secondary-color: color("materialize-red", "lighten-2") !default;
+$success-color: color("green", "base") !default;
+$error-color: color("red", "base") !default;
+$link-color: color("light-blue", "darken-1") !default;
+
+//Materialize
+@import "node_modules/materialize-css/sass/materialize";
+
+// Bootstrap
+//@import "node_modules/bootstrap/scss/bootstrap";
+
+
+
+.card-col-2{
+  columns:2;
+}
+
+.pagination li.active span {
+    color: #fff;
+}
+
+.pagination li span {
+    color: #444;
+    display: inline-block;
+    font-size: 1.2rem;
+    padding: 0 10px;
+    line-height: 30px;
+}
+
+.valign-wrapper {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+
+
+.login-section{
+   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  margin: 0 auto;
+    max-width: 1280px;
+  .row {
+    margin: 0 auto;
+  }
+}
