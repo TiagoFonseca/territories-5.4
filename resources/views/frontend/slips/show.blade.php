@@ -13,32 +13,30 @@
 
 					<div> {{$key}} </div>
 					@foreach($street['house'] as $key => $house)
-						@if($key <> "id")
 						<div class="ident-1">
-							{!! Form::checkbox('completed', true, $house['assHouseStatus'], array('data-id' => $house['id'], 'data-map' => $myMap['id'], 'data-assignment' => $ass_id, 'class' => 'houseStatus filled-in', 'id' => 'house'.$house['id'])) !!}
-							<label for="house{{$house['id']}}">{{$house['number']}} {{$house['bellflat']}} {{$house['houseStatus']}} {{$house['type']}} {{$house['description']}}</label>
-							
+							{!! Form::checkbox('completed', true, $house['assHouseStatus'], array('data-id' => $house['id'], 'data-map' => $myMap['id'], 'data-assignment' => $ass_id, 'class' => 'houseStatus filled-in', 'id' => 'house'.$house['id'], !$house['houseStatus'] ? '' : 'disabled')) !!}
+							<label for="house{{$house['id']}}" class={{$house['houseStatus']}}>{{$house['number']}} {{$house['bellflat']}} {{$house['houseStatus']}} {{$house['type']}} {{$house['description']}}</label>
+
 						</div>
-						@endif
 					@endforeach
-	
+
 				@endforeach
 				</div>
-				
+
 					</div>
-					
-				
+
+
 				</div>
-		
+
 	@endforeach
 	</div>
 
-	</div>	
+	</div>
 	<!-- Ajax function to write on the database everytime the state of a checkbox is changed -->
-		
+
 	<script type="text/javascript">
 	$(document).ready(function(){
-	  $(".houseStatus").on("change", function() {            
+	  $(".houseStatus").on("change", function() {
 	    $.ajax({
 	      url: '/changeHouseStatusShared',
 	      type: "post",
@@ -46,8 +44,8 @@
 	      success: function(data){
 	       // alert("saved successfully!");
 	      }
-	    });      
-	  }); 
+	    });
+	  });
 	});
 	</script>
 @stop

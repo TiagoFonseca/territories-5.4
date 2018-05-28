@@ -12,6 +12,7 @@ use App\Assignment;
 use App\House;
 use App\AssignmentHouse;
 use App\AssignmentSlip;
+use App\AssignmentSlipPublisher;
 use Auth;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
@@ -21,7 +22,9 @@ use App\Http\Requests\AssignmentHouseRequest;
 use App\Http\Requests\AssignmentSlipRequest;
 use App\Bitly;
 use App\Helpers\helpers;
-
+use Watson\Autologin\Facades\Autologin;
+//use Illuminate\Support\Facades\Crypt;
+use Junity\Hashids\Facades\Hashids;
 
 use Request;
 //use Illuminate\Http\Request;
@@ -36,17 +39,17 @@ class FrontendMyMapsController extends Controller
         foreach($arr as $key => $value) {
             $keys = explode(".", $key); //potentially other separator
             $lastKey = array_pop($keys);
-    
+
             $node = &$result;
             foreach($keys as $k) {
                 if (!array_key_exists($k, $node))
                     $node[$k] = array();
                 $node = &$node[$k];
             }
-    
+
             $node[$lastKey] = $value;
         }
-    
+
         return $result;
     }
     /**
@@ -57,18 +60,18 @@ class FrontendMyMapsController extends Controller
     public function index()
     {
         $maps=Map::MyMaps()->get();
-        
+
         return view('frontend.my-maps.index', compact('maps'));
     }
-    
+
     // public function my_maps()
     // {
-       
+
     //     $maps=Map::MyMaps()->get();
-        
+
     //     return view('frontend.my-maps.index', compact('maps'));
     // }
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -85,19 +88,19 @@ class FrontendMyMapsController extends Controller
     }
 
     /**
-     *  
+     *
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      **/
-    
+
     public function store(MapRequest $request)
     {
           //only continues below if validation doesn't fail
 
           // dd($request->input('slips'));
-        
+
 
     }
 
@@ -115,12 +118,10 @@ class FrontendMyMapsController extends Controller
       //dd("MAP ".$myMap." ASSIGNMENT: ". $assignmentID );
       $results = DB::select("SELECT assignments.id as assID, assignments_slips.shared as shared, maps.number as mapNumber, slips.id as slipID, slips.name as slipName, streets.name as streetName, houses.id as houseID, houses.number as houseNumber, houses.bell_flatno as houseBellFlat, houses.status as houseStatus, houses.type as houseType, houses.description as houseDesc, assignments_houses.status as assHouseStatus
       FROM assignments, maps, slips, streets, houses, assignments_houses, assignments_slips
-      WHERE (assignments.id ='$assignmentID' ) 
-      AND (assignments_slips.slip_id = slips.id AND( assignments_slips.assignment_id = '$assignmentID'))    
+      WHERE (assignments.id ='$assignmentID' )
+      AND (assignments_slips.slip_id = slips.id AND( assignments_slips.assignment_id = '$assignmentID'))
       AND maps.id = assignments.map_id
       AND slips.map_id = maps.id
-      
-
       AND (
       houses.slip_id = slips.id
       AND houses.street_id = streets.id
@@ -128,13 +129,11 @@ class FrontendMyMapsController extends Controller
       AND (
       assignments_houses.assignment_id = assignments.id
       AND assignments_houses.house_id = houses.id
-
       );
-
       ");
-      //dd($results);
+
       $sourceData = collect($results);
-      //dd($myMap);
+
       $totalSlips = $sourceData->unique('slipID')->map(function($item, $key) {
          return [
              "slipID" => $item->slipID,
@@ -145,7 +144,7 @@ class FrontendMyMapsController extends Controller
       $mapNumber = $sourceData->unique('mapNumber')->pluck('mapNumber');
       $myData=[];
       $totalSlips = $totalSlips->sortBy('slipName');
-      //      dd($totalSlips);
+
 
       foreach($totalSlips as $slip) {
         $newSourceData = $sourceData->where('slipID', $slip['slipID'])->values();
@@ -154,18 +153,29 @@ class FrontendMyMapsController extends Controller
              "streetName" => $streetName
          ];
         })->values();
-       // dd($slip);
-        //$myData['slips'][]=$slip; //['slipName' => $slip['slipName'], 'slipID' => $slip['slipID']];
 
-       
+        // Get information on how many times the slip has been worked on
+        $ass_slip_id = AssignmentSlip::where('slip_id', $slip['slipID'])
+                                            ->where('assignment_id', $assignmentID)
+                                            ->get();
+        $workedOn = AssignmentSlipPublisher::where('assignment_slip_id', $ass_slip_id[0]->id)->get();
+    //dd($workedOn);
         foreach($streets as $street){
           $houses = $newSourceData->where('streetName', $street['streetName'])->toArray();
-          //$myData['slips']['streets'][]=$street;
 
           foreach($houses as $house){
             $house = (array) $house;
-           // dd($house);
 
+           //Obscure the assignment ID and the slip ID
+           $ass_id_encrypted = Hashids::encode($house['assID']);
+           $slipId_encrypted = Hashids::encode($slip['slipID']);
+
+          //Generate autologin token for user "guest"
+          $guest = User::where('name', 'guest')->first();
+          //dd($guest);
+          $autologin_url = Autologin::to($guest, '/assignments/'.$ass_id_encrypted.'/slips/'.$slipId_encrypted);
+
+        //  dd($autologin_url);
             $newHouse=array(
                    "id" => $house['houseID'],
                    "number" => $house['houseNumber'],
@@ -174,30 +184,37 @@ class FrontendMyMapsController extends Controller
                    "type"  => $house['houseType'],
                    "description" => $house['houseDesc'],
                    "assHouseStatus"  => $house['assHouseStatus'],
-                   "ass_id" => $house['assID']
+                   "ass_id" => $house['assID'],
+                   "ass_id_encrypted" => $ass_id_encrypted,
+                   "autologin_url" => $autologin_url
                     );
             //dd($slip);
-                                                
+            // url = "/assignments/".$ass_id_encrypted."/slips/".$slipId_encrypted
+
+
             //[$slip]['streets'][$value['streetName']]['houses'][]$houses;
             $myData['slip'][$slip['slipName']]['id']=$slip['slipID'];
-            $myData['slip'][$slip['slipName']]['shared']=$slip['shared'];     
+            $myData['slip'][$slip['slipName']]['id_encrypted']=$slipId_encrypted;
+            $myData['slip'][$slip['slipName']]['workedOn']=$workedOn;
+
+            $myData['slip'][$slip['slipName']]['shared']=$slip['shared'];
             $myData['slip'][$slip['slipName']]['street'][$street['streetName']]['house'][]=$newHouse;
 
 
           }
         }
-        
+
       }
       //dd($myData);
       $mapID = $mapNumber[0];
      // $myData = collect($myData);
      $myData=collect( $myData['slip'] )->paginate( 2 );
-         //dd($myData);  
+         //dd($myData);
 
-      
+
       return view('frontend.my-maps.show', compact('myMap','myData'));
 
-      
+
       //dd(collect($results)->unique('slipID'));
       //$test = collect($results)->map(function($x){ return (array) $x; })->toArray();
       /*dd($results);
@@ -206,27 +223,27 @@ class FrontendMyMapsController extends Controller
       foreach ($test as $key => $value) {
          $keys = explode("_", $key); //potentially other separator
          $lastKey = array_pop($keys);
-    
+
             $node = &$result;
             foreach($keys as $k) {
                 if (!array_key_exists($k, $node))
                     $node[$k] = array();
                 $node = &$node[$k];
             }
-    
+
             $node[$lastKey] = $value;
-        
+
       }
-      
-     dd($keys); 
-     
+
+     dd($keys);
+
       $myData=collect($results);
       $final = [];
       $uniqueSlips=$myData->unique('slipID');
       $uniqueStreets=$uniqueSlips->unique('streetName');
-      
+
       $grouped = $myData->mapToGroups(function ($item, $key) {
-          return [$item->slipName => [ 
+          return [$item->slipName => [
                       $item->streetName => [
                         'houseNumber' => $item->houseNumber,
                         'houseBellFlat'=> $item->houseBellFlat,
@@ -237,30 +254,30 @@ class FrontendMyMapsController extends Controller
                       ],
                     ],
                   ];
-                 
+
       });
-      
+
       dd($grouped);
-      
+
       //$myData = collect($assignedMap)->paginate(3);
       foreach($uniqueSlips as $uSlip){
          foreach($uniqueStreets as $uStreet){
-             
+
              //$final['slip'][$uSlip->slipID]=['slipID' => $uSlip->slipID, 'slipName' => $uSlip->slipName];
              $final['slip'][$uSlip->slipID]['street'][$uStreet->streetName]['house'][]=['streetName' => 'test'];
          }
-        
+
       }
-      
+
      return view('frontend.my-maps.show', compact('final'));
 
        //dd($final);
-      
+
       /*
       $myData = collect($results);
       //dd($myData);
       $grouped = $myData->mapToGroups(function ($item, $key) {
-          return [$item->slipName => [ 
+          return [$item->slipName => [
                       $item->streetName => [
                         'houseNumber' => $item->houseNumber,
                         'houseBellFlat'=> $item->houseBellFlat,
@@ -271,33 +288,33 @@ class FrontendMyMapsController extends Controller
                       ],
                     ],
                   ];
-                 
+
       });
-      
+
       dd($grouped->toArray());
       */
-      
+
 
 //      dd($results);
 
      /* $maps = Map::all();
-      
+
       $map = $request->find($id);
       $myMap['name'] = $map->name;
       $myMap['id'] = $map->id;
-      
+
       $slips = Slip::all();
 
       $streets = Street::all();
 
       /* Group our collection by Street ID */
       $assignedSlips = $map->houses->groupBy('slip_id');
-      
+
       /* Test to improve database performance */
-      
-      
-      /*  */ 
-      
+
+
+      /*  */
+
       if (!$assignedSlips->isEmpty()) {
 
 
@@ -307,11 +324,11 @@ class FrontendMyMapsController extends Controller
           $uniqueSlipId = $uniqueSlip[0]['slip_id'];
           $slipName = $slips->find($uniqueSlipId)->name;
           $slipId = $slips->find($uniqueSlipId)->id;
-          
+
           // $mySlip['slip'][''] => $slipName, 'id' => $slipId];
          // dd($details);
           //$slipDetails['name']
-          
+
           $assignedHouses = $map->houses->where('slip_id', $uniqueSlipId)->groupBy('street_id');
 
           foreach ($assignedHouses as $house) {
@@ -331,9 +348,9 @@ class FrontendMyMapsController extends Controller
                   $houseStatus = $item->status;
                   $houseDescription = $item->description;
                   $houseBellFlat = $item->bellflatno;
-                  
-                  
-                  /* 
+
+
+                  /*
                   * We need to get the assignment ID so that we can get the information of the house for the open assignment
                   * otherwise it will give us info on the first if finds, which will be a house belonging to a closed assignment
                   */
@@ -341,28 +358,32 @@ class FrontendMyMapsController extends Controller
                                       ->where('user_id', Auth::user()->id)
                                       ->where('finished_on', NULL)
                                       ->value('id');
-                  /* 
+
+                  //dd($ass_id_encrypted);
+                  /*
                   * Using the assignment ID we just collected we can searh in the table assignments_houses for the correct entry for this
                   * house, that way we will be displaying the correct status
                   */
                   $assHouseStatus = AssignmentHouse::where('house_id', $houseID)
                                                 ->where('assignment_id', $ass_id)
                                                 ->value('status');
-                  
+
                   $slipShared = AssignmentSlip::where('assignment_id', $ass_id)
                                                 ->where('slip_id', $slipId)
                                                 ->value('shared');
-                                                
+
+
+
                     $myData['slip'][$slipName]['id']=$slipId;
-                    $myData['slip'][$slipName]['shared']=$slipShared;     
+                    $myData['slip'][$slipName]['shared']=$slipShared;
                     $myData['slip'][$slipName]['street'][$streetName]['house'][] = array('id' => $houseID, 'number' => $houseNumber,
-                  'type' => $houseType, 'houseStatus' => $houseStatus, 'assStatus' => $assHouseStatus, 'description' => $houseDescription, 'bellflat' => $houseBellFlat, 'assHouseStatus' => $assHouseStatus, 'ass_id' => $ass_id);
-                    
-                   
+                  'type' => $houseType, 'houseStatus' => $houseStatus, 'assStatus' => $assHouseStatus, 'description' => $houseDescription, 'bellflat' => $houseBellFlat, 'assHouseStatus' => $assHouseStatus, 'ass_id' => $ass_id, 'ass_id_encrypted' => $ass_id_encrypted);
+
+
                     // $myData['slip'][$slipName]['street'][$streetName]['house']['id']= $houseID;
                     // $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['status']= $assHouseStatus;
                     // $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['number']= $houseNumber;
-                    
+
                     // $myData[] = array(
                     //   'id' => $slipId,
                     //   'name' => $slipName,
@@ -377,16 +398,16 @@ class FrontendMyMapsController extends Controller
                     //       )
                     //     )
                     //   );
-                    
+
                   // array_push($myData, $myHouse);
                   }
               }
          }
-         
+
          $myData=collect( $myData['slip'] )->paginate( 3 );
-         
+
          //dd($myData);
-         return view('frontend.my-maps.show', compact('myMap','myData', 'ass_id'));
+         return view('frontend.my-maps.show', compact('myMap','myData', 'ass_id', 'ass_id_encrypted'));
       } else {
         return view('frontend.my-maps.show_error');
       }
@@ -449,7 +470,7 @@ class FrontendMyMapsController extends Controller
     {
         //
     }
-    
+
     public function available()
     {
         //
@@ -473,44 +494,44 @@ class FrontendMyMapsController extends Controller
 
         return view('my-maps.index', compact('maps'));
     }
-    
+
     public function houseStatus(AssignmentHouseRequest $request)
     {
-       //dd("I'm in!"); 
-  
+       //dd("I'm in!");
+
        if(Request::ajax()) {
         $id = $request->input('id');
         $status = $request->input('status');
         $map_id = $request->input('map_id');
                 $ass_id = $request->input('ass_id');
 
-        
+
         if($status==="true"){
           $status=1;
         } elseif($status==="false") {
           $status=0;
         }
-        
-        /* 
+
+        /*
         * We need to find the assignment ID so that we know which house on the table assignments_houses to update
         * because we have different records for the same house ID (we can have some from closed assignments)
         */
-        
+
 
         //$ass_id = Assignment::where('user_id', Auth::user()->id)->where('map_id', $map_id)->where('finished_on', NULL)->value('id');
-        
-        //dd($ass_id);                    
+
+        //dd($ass_id);
         //dd("ID: ".$id."  Status: ".$status."  Ass ID:". $ass_id ."User ID: ".Auth::user()->id);
-        
+
         AssignmentHouse::where('house_id', $id)
                         ->where('assignment_id', $ass_id)
                         ->update(['status' => $status]);
-        
-        
+
+
        }
 
     }
-    
+
      public function share(AssignmentSlipRequest $request)
     {
               //dd("I'm in");
@@ -519,17 +540,17 @@ class FrontendMyMapsController extends Controller
         $slipID = Request('slip_id');
         $assID = Request('assignment_id');
         $shared = Request('shared');
-        
-        
-        
+
+
+
         if($shared==="true"){
           $shared=1;
         } elseif($shared==="false") {
           $shared=0;
         }
-        
+
         //dd($assID);
-        
+
         /* Check if record for this assignment already exists */
         $Assignment = AssignmentSlip::where('assignment_id', $assID)
                                       ->where('slip_id', $slipID)
@@ -542,21 +563,21 @@ class FrontendMyMapsController extends Controller
           /* if it already exists update the existing one */
           AssignmentSlip::where('assignment_id', $assID)
                       ->where('slip_id', $slipID)
-                      ->update(['shared' => $shared]);  
+                      ->update(['shared' => $shared]);
         }
-   
-      /* Finished checking if record exists*/ 
-        
-        
-        
+
+      /* Finished checking if record exists*/
+
+
+
         }
     }
-    
-    
+
+
     public function showSlip(Slip $request){
-      
+
       $slips = Slips::all();
-    
+
       $slip = $request->find($id);
       $mySlip['name'] = $slip->name;
 
@@ -574,11 +595,11 @@ class FrontendMyMapsController extends Controller
           $uniqueSlipId = $uniqueSlip[0]['slip_id'];
           $slipName = $slips->find($uniqueSlipId)->name;
           $slipId = $slips->find($uniqueSlipId)->id;
-          
+
           // $mySlip['slip'][''] => $slipName, 'id' => $slipId];
          // dd($details);
           //$slipDetails['name']
-          
+
           $assignedHouses = $map->houses->where('slip_id', $uniqueSlipId)->groupBy('street_id');
 
           foreach ($assignedHouses as $house) {
@@ -594,8 +615,8 @@ class FrontendMyMapsController extends Controller
                 foreach ($house as $item) {
                   $houseNumber = $item->number;
                   $houseID = $item->id;
-                  
-                  /* 
+
+                  /*
                   * We need to get the assignment ID so that we can get the information of the house for the open assignment
                   * otherwise it will give us info on the first if finds, which will be a house belonging to a closed assignment
                   */
@@ -603,22 +624,25 @@ class FrontendMyMapsController extends Controller
                                       ->where('user_id', Auth::user()->id)
                                       ->where('finished_on', NULL)
                                       ->value('id');
-                  /* 
+
+                //  $ass_id_encrypt = Crypt::encryptString($ass_id);
+
+                  /*
                   * Using the assignment ID we just collected we can searh in the table assignments_houses for the correct entry for this
                   * house, that way we will be displaying the correct status
                   */
                   $houseStatus = AssignmentHouse::where('house_id', $houseID)
                                                 ->where('assignment_id', $ass_id)
                                                 ->value('status');
-                                                
-                    
-                    $myData['slip'][$slipName]['id']=$slipId;                         
+
+
+                    $myData['slip'][$slipName]['id']=$slipId;
                     $myData['slip'][$slipName]['street'][$streetName]['house']['id']= $houseID;
                     $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['status']= $houseStatus;
                     $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['number']= $houseNumber;
-                    
 
-                    
+
+
                   }
               }
          }
@@ -627,11 +651,11 @@ class FrontendMyMapsController extends Controller
       } else {
         return view('frontend.my-slips.show_error');
       }
-      
+
     }
 
-    
-    
+
+
 
  }
 

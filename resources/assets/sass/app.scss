@@ -2,7 +2,7 @@
 // Fonts
 @import url("https://fonts.googleapis.com/css?family=Raleway:300,400,600");
 
-// materialize variables 
+// materialize variables
 
 @import "node_modules/materialize-css/sass/components/_color";
 
@@ -68,3 +68,56 @@ $link-color: color("light-blue", "darken-1") !default;
     margin: 0 auto;
   }
 }
+
+.DNC{
+  text-decoration: line-through;
+  color: $secondary-color;
+}
+
+.add-new-record{
+  margin-top:1.5rem;
+}
+
+.card{
+  &.publisherRecordsTable{
+    margin-bottom:0px;
+
+  }
+}
+
+.collapsible{
+  margin-top:0px;
+  margin-bottom:0px;
+}
+
+@media #{$small-and-down} {
+  .card{
+    &.publisherRecordsTable{
+
+      .card-content{
+        padding:.5rem;
+        font-size:.9rem;
+      }
+    }
+  }
+  .collapsible{
+
+    .collapsible-body{
+      padding-top:0rem;
+      padding-bottom:1rem;
+
+
+    form.publisherRecordsForm{
+      input{
+        font-size:.9rem !important;
+        &:not(:last-child), &.datepicker{
+            margin-bottom:0px !important;
+          }
+      }
+    }
+  }
+}
+}
+// .collapsible-body{
+//   overflow: hidden;
+// }

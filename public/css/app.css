@@ -12030,3 +12030,42 @@ button.picker__close:focus {
   margin: 0 auto;
 }
 
+.DNC {
+  text-decoration: line-through;
+  color: #ee6e73;
+}
+
+.add-new-record {
+  margin-top: 1.5rem;
+}
+
+.card.publisherRecordsTable {
+  margin-bottom: 0px;
+}
+
+.collapsible {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+@media only screen and (max-width: 600px) {
+  .card.publisherRecordsTable .card-content {
+    padding: .5rem;
+    font-size: .9rem;
+  }
+
+  .collapsible .collapsible-body {
+    padding-top: 0rem;
+    padding-bottom: 1rem;
+  }
+
+  .collapsible .collapsible-body form.publisherRecordsForm input {
+    font-size: .9rem !important;
+  }
+
+  .collapsible .collapsible-body form.publisherRecordsForm input:not(:last-child),
+  .collapsible .collapsible-body form.publisherRecordsForm input.datepicker {
+    margin-bottom: 0px !important;
+  }
+}
+

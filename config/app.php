@@ -169,6 +169,8 @@ return [
         Laravel\Tinker\TinkerServiceProvider::class,
         TCG\Voyager\VoyagerServiceProvider::class,
         Collective\Html\HtmlServiceProvider::class,
+        Junity\Hashids\HashidsServiceProvider::class,
+        Watson\Autologin\AutologinServiceProvider::class,
 
 
         /*
@@ -231,6 +233,8 @@ return [
         'View' => Illuminate\Support\Facades\View::class,
         'Form' => Collective\Html\FormFacade::class,
         'Html' => Collective\Html\HtmlFacade::class,
+        'Hashids' => Junity\Hashids\Facades\Hashids::class,
+        'Autologin' => Watson\Autologin\Facades\Autologin::class,
 
     ],
 
