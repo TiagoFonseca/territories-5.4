@@ -5,9 +5,10 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('bootstrap');
 //require('jquery');
+require('./bootstrap');
 require('materialize-css');
+require('moment');
 
 window.Vue = require('vue');
 
@@ -25,38 +26,29 @@ $( document ).ready(function(){
   Vue.component('slip-records', require('./components/slipRecords.vue'));
   Vue.component('slip-records-form', require('./components/slipRecordsForm.vue'));
   const app = new Vue({
-      el: '#prt-vue',
-      mounted(){
-        var suspend = false;
-      $('#materialize-select').material_select();
-      $('#materialize-select').on('change', function() {
-          if (!suspend) {
-              suspend = true;
-              var event = new CustomEvent('change', {
-                  detail: 'change',
-                  bubbles: true
-              });
-              $(this).get(0).dispatchEvent(event);
-          } else {
-              suspend = false;
-          }
-      });
-      }
+      el: '#prt-vue'
   });
-  Materialize.updateTextFields();
-    $(".button-collapse").sideNav();
+  //M.AutoInit();
+  $('.sidenav').sidenav();
+
+  //M.updateTextFields();
+    $(".button-collapse").sidenav();
   $(".dropdown-button").dropdown();
   $('.collapsible').collapsible();
-  $('select').material_select();
-  $('.datepicker').pickadate({
-     selectMonths: true, // Creates a dropdown to control month
-     selectYears: 2, // Creates a dropdown of 2 years to control year,
-     today: 'Today',
-     clear: 'Clear',
-     close: 'Ok',
-     closeOnSelect: false, // Close upon selecting a date,
-     container: undefined, // ex. 'body' will append picker to body
-   });
+  // $('select').material_select();
+  // $('.datepicker').pickadate({
+  //    selectMonths: true, // Creates a dropdown to control month
+  //    selectYears: 2, // Creates a dropdown of 2 years to control year,
+  //    today: 'Today',
+  //    clear: 'Clear',
+  //    close: 'Ok',
+  //    closeOnSelect: false, // Close upon selecting a date,
+  //    container: undefined, // ex. 'body' will append picker to body
+  //  });
+ // $('.datepicker').datepicker();
+  $('select').formSelect();
+
+
 
 
 

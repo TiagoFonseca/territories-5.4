@@ -14,7 +14,7 @@ use App\AssignmentSlip;
 use App\Territory;
 use Auth;
 use Junity\Hashids\Facades\Hashids;
-
+use App\AssignmentSlipPublisher;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
@@ -210,6 +210,13 @@ public function unfinished()
             // dd($details);
               //$slipDetails['name']
 
+
+              // Get information on how many times the slip has been worked on
+              $ass_slip_id = AssignmentSlip::where('slip_id', $slipID)
+                                                  ->where('assignment_id', $assignmentID)
+                                                  ->get();
+              $workedOn = AssignmentSlipPublisher::where('assignment_slip_id', $ass_slip_id[0]->id)->get();
+
               $assignedHouses = $myMap->houses->where('slip_id', $uniqueSlipId)->groupBy('street_id');
 
               foreach ($assignedHouses as $house) {
@@ -275,7 +282,8 @@ public function unfinished()
                         //[$slip]['streets'][$value['streetName']]['houses'][]$houses;
                          $myData['slip'][$slipName]['id']=$slipID;
                         $myData['slip'][$slipName]['street'][$streetName]['house'][] = $newHouse;
-
+                        $myData['slip'][$slipName]['assignment_slip_id']=$ass_slip_id[0]->id;
+                        $myData['slip'][$slipName]['workedOn']=$workedOn;
 
                       }else{
                         //dd($slipShared);

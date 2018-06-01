@@ -3,6 +3,10 @@
 <html class="grey lighten-4">
 
     <head>
+      <meta name="csrf-token" content="{{ csrf_token() }}">
+      {{-- <meta name="viewport" content="width=device-width, initial-scale=1.0"/> --}}
+      <meta name="viewport" content="width=device-width, user-scalable=no">
+
         <title>Camden Map management</title>
 
         <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
@@ -18,9 +22,9 @@
 
 <!--         <link type="text/css" rel="stylesheet" href="{{ asset('/css/master.css') }}"  media="screen,projection"/> -->
 
-        <meta id="token" name="token" content="{{ csrf_token() }}">
+        {{-- <meta id="token" name="token" content="{{ csrf_token() }}"> --}}
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
 
 
         <style>

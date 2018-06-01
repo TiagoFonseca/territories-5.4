@@ -195,6 +195,7 @@ class FrontendMyMapsController extends Controller
             //[$slip]['streets'][$value['streetName']]['houses'][]$houses;
             $myData['slip'][$slip['slipName']]['id']=$slip['slipID'];
             $myData['slip'][$slip['slipName']]['id_encrypted']=$slipId_encrypted;
+            $myData['slip'][$slip['slipName']]['assignment_slip_id']=$ass_slip_id[0]->id;
             $myData['slip'][$slip['slipName']]['workedOn']=$workedOn;
 
             $myData['slip'][$slip['slipName']]['shared']=$slip['shared'];

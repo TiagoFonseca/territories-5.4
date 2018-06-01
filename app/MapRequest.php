@@ -17,7 +17,7 @@ class MapRequest extends Model
       protected $dates = ['requested_on', 'responded_on'];
 
       /**
-      * By parsing the "published_at" date field, we will be adding a default time of 00:00:00
+      * By parsing the "requested_on" date field, we will be adding a default time of 00:00:00
       *
       * @param [type] $date [description]
       */
@@ -27,7 +27,7 @@ class MapRequest extends Model
       }
 
       /**
-      * By parsing the "published_at" date field, we will be adding a default time of 00:00:00
+      * By parsing the "responded_on" date field, we will be adding a default time of 00:00:00
       *
       * @param [type] $date [description]
       */
@@ -61,7 +61,7 @@ class MapRequest extends Model
         }
 
      /**
-     * Only one map belongs to a map Request 
+     * Only one map belongs to a map Request
      * @return [type] [description]
      */
           public function map()

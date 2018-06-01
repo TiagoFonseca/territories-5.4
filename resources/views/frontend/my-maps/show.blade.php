@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
-	<h1> 	{{$myMap['name']}} </h1>
+	<h2> 	{{$myMap['name']}} </h2	>
 		{!! $myData->render() !!}
 
 	<div class="row" id="prt-vue">
@@ -9,8 +9,7 @@
 			<div class="col s12 m6 l6 ">
 
 			{{-- @include('partials.publisherRecords') --}}
-			<slip-records :slip='{!! json_encode($slip['workedOn']) !!}'></slip-records>
-			<slip-records-form></slip-records-form>
+			<slip-records :assslipid='{{$slip['assignment_slip_id']}}'></slip-records>
 
 				<div class="card">
 
@@ -24,9 +23,15 @@
 
 					<div> {{$key}} </div>
 					@foreach($street['house'] as $key => $house)
-						<div class="ident-1">
+						{{-- <div class="ident-1">
 							{!! Form::checkbox('completed', true, $house['assHouseStatus'], array('data-id' => $house['id'], 'data-map' => $myMap['id'], 'data-assignment' => $house['ass_id'], 'class' => 'houseStatus filled-in ', 'id' => 'house'.$house['id'], !$house['houseStatus'] ? '' : 'disabled')) !!}
 							<label for="house{{$house['id']}}" class={{$house['houseStatus']}}>{{$house['number']}} {{$house['bellflat']}} {{$house['houseStatus']}} {{$house['type']}} {{$house['description']}}</label>
+						</div> --}}
+						<div class="ident-1">
+							<label for="house{{$house['id']}}">
+									{!! Form::checkbox('completed', true, $house['assHouseStatus'], array('data-id' => $house['id'], 'data-map' => $myMap['id'], 'data-assignment' => $house['ass_id'], 'class' => 'houseStatus filled-in ', 'id' => 'house'.$house['id'], !$house['houseStatus'] ? '' : 'disabled')) !!}
+									<span>{{$house['number']}} {{$house['bellflat']}} {{$house['houseStatus']}} {{$house['type']}} {{$house['description']}}</span>
+							</label>
 						</div>
 
 					@endforeach
@@ -39,9 +44,14 @@
 		              <!-- Share button
 		              		Sets Share to 1 for the current slip -->
 
-						{!! Form::checkbox('shared', true, $slip['shared'], array('class' => 'share', 'id' => $slip['id'])) !!}
+						{{-- {!! Form::checkbox('shared', true, $slip['shared'], array('class' => 'share', 'id' => $slip['id'])) !!}
 	    		  <label for="{{$slip['id']}}">Share slip</label>
-						{!! Form::close() !!}
+						{!! Form::close() !!} --}}
+								<label for="{{$slip['id']}}">
+									{!! Form::checkbox('shared', true, $slip['shared'], array('class' => 'share', 'id' => $slip['id'])) !!}
+										<span>Share slip</span>
+									{!! Form::close() !!}
+								</label>
 
 		            </div>
 

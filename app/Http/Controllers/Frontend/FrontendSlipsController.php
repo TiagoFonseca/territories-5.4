@@ -33,18 +33,18 @@ class FrontendSlipsController extends Controller
     public function index()
     {
         $maps=Map::MyMaps()->get();
-        
+
         return view('frontend.slips.index', compact('maps'));
     }
-    
+
     // public function my_maps()
     // {
-       
+
     //     $maps=Map::MyMaps()->get();
-        
+
     //     return view('frontend.my-maps.index', compact('maps'));
     // }
-    
+
 
     /**
      * Show the form for creating a new resource.
@@ -61,13 +61,13 @@ class FrontendSlipsController extends Controller
     }
 
     /**
-     *  
+     *
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      **/
-    
+
     public function store(MapRequest $request)
     {
           //only continues below if validation doesn't fail
@@ -86,12 +86,12 @@ class FrontendSlipsController extends Controller
      * @return \Illuminate\Http\Response
      */
    public function show(Slip $request, $id){
-      
+
       // $slips = Slips::all();
-    
+
       $slip = $request->find($id);
       $slipName = $slip->name;
-      
+
       $map_id = $slip->map_id;
       $myMap = Map::find($map_id);
      // dd($map);
@@ -110,11 +110,11 @@ class FrontendSlipsController extends Controller
           $uniqueSlipId = $uniqueSlip[0]['slip_id'];
           //$slipName = $slip->name;
           //$slipId = $slip->id;
-          
+
           // $mySlip['slip'][''] => $slipName, 'id' => $slipId];
         // dd($details);
           //$slipDetails['name']
-          
+
           $assignedHouses = $myMap->houses->where('slip_id', $uniqueSlipId)->groupBy('street_id');
 
           foreach ($assignedHouses as $house) {
@@ -130,8 +130,8 @@ class FrontendSlipsController extends Controller
                 foreach ($house as $item) {
                   $houseNumber = $item->number;
                   $houseID = $item->id;
-                  
-                  /* 
+
+                  /*
                   * We need to get the assignment ID so that we can get the information of the house for the open assignment
                   * otherwise it will give us info on the first if finds, which will be a house belonging to a closed assignment
                   */
@@ -139,21 +139,21 @@ class FrontendSlipsController extends Controller
                                       ->where('user_id', Auth::user()->id)
                                       ->where('finished_on', NULL)
                                       ->value('id');
-                  /* 
+                  /*
                   * Using the assignment ID we just collected we can searh in the table assignments_houses for the correct entry for this
                   * house, that way we will be displaying the correct status
                   */
                   $houseStatus = AssignmentHouse::where('house_id', $houseID)
                                                 ->where('assignment_id', $ass_id)
                                                 ->value('status');
-                                                
-                    
+
+
                     $myData['slip'][$slipName]['street'][$streetName]['house']['id']= $houseID;
                     $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['status']= $houseStatus;
                     $myData['slip'][$slipName]['street'][$streetName]['house'][$houseID]['number']= $houseNumber;
-                    
 
-                    
+
+
                   }
               }
         }
@@ -162,7 +162,7 @@ class FrontendSlipsController extends Controller
       } else {
         return view('frontend.slips.show_error');
       }
-      
+
     }
 
     /**
@@ -221,7 +221,7 @@ class FrontendSlipsController extends Controller
 //     {
 //         //
 //     }
-    
+
 //     public function available()
 //     {
 //         //
@@ -245,45 +245,45 @@ class FrontendSlipsController extends Controller
 
 //         return view('my-maps.index', compact('maps'));
 //     }
-    
+
 //     public function houseStatus(AssignmentHouseRequest $request)
 //     {
-    
-  
+
+
 //       if(Request::ajax()) {
 //         $id = $request->input('id');
 //         $status = $request->input('status');
 //         $map_id = $request->input('map_id');
-        
+
 //         if($status==="true"){
 //           $status=1;
 //         } elseif($status==="false") {
 //           $status=0;
 //         }
-        
-//         /* 
+
+//         /*
 //         * We need to find the assignment ID so that we know which house on the table assignments_houses to update
 //         * because we have different records for the same house ID (we can have some from closed assignments)
 //         */
-        
+
 
 //         $ass_id = Assignment::where('user_id', Auth::user()->id)
 //                             ->where('map_id', $map_id)
 //                             ->where('finished_on', NULL)
 //                             ->value('id');
 //         //dd($ass_id->id);
-        
-        
+
+
 //         AssignmentHouse::where('house_id', $id)
 //                         ->where('assignment_id', $ass_id)
 //                         ->update(['status' => $status]);
-        
-        
+
+
 //       }
 
 //     }
-    
-    
+
+
 
 }
 

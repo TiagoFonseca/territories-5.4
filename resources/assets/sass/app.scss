@@ -4,24 +4,37 @@
 
 // materialize variables
 
-@import "node_modules/materialize-css/sass/components/_color";
+//@import "node_modules/materialize-css/sass/components/_color";
 
 
 // end of materialize variables
 
 // Variables
 //@import "_variables";
-$primary-color: color("teal", "lighten-2") !default;
+
+
+//Materialize
+// Color
+@import "node_modules/materialize-css/sass/components/color-variables";
+//@import "node_modules/materialize-css/sass/components/color-classes";
+
+// Variables;
+//@import "node_modules/materialize-css/sass/components/variables";
+
+$primary-color:  color("cyan", "base") !default;
 $primary-color-light: lighten($primary-color, 15%) !default;
 $primary-color-dark: darken($primary-color, 15%) !default;
 
-$secondary-color: color("materialize-red", "lighten-2") !default;
+$secondary-color: color("cyan", "lighten-1") !default;
 $success-color: color("green", "base") !default;
 $error-color: color("red", "base") !default;
 $link-color: color("light-blue", "darken-1") !default;
+$DNC-red: color("materialize-red", "lighten-2") !default;
 
-//Materialize
+
 @import "node_modules/materialize-css/sass/materialize";
+
+//$primary-color: color("teal", "lighten-2") !default;
 
 // Bootstrap
 //@import "node_modules/bootstrap/scss/bootstrap";
@@ -70,8 +83,11 @@ $link-color: color("light-blue", "darken-1") !default;
 }
 
 .DNC{
-  text-decoration: line-through;
-  color: $secondary-color;
+  span{
+    text-decoration: line-through;
+
+  }
+  color: $DNC-red;
 }
 
 .add-new-record{
@@ -121,3 +137,17 @@ $link-color: color("light-blue", "darken-1") !default;
 // .collapsible-body{
 //   overflow: hidden;
 // }
+.sidenav-trigger{
+    position:absolute;
+    margin-top: -37px;
+    color:white !important;
+}
+
+a{
+  cursor:pointer;
+}
+
+[type="checkbox"].filled-in:checked + span:not(.lever)::after {
+  border-color: $primary-color;
+  background-color: $primary-color;
+}

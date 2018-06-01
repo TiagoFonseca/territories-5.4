@@ -16,3 +16,7 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::post('/slips-records-form/add', 'Frontend\AssignmentSlipRecord@store');
+
+Route::post('/get-records', 'Frontend\AssignmentSlipRecord@view');

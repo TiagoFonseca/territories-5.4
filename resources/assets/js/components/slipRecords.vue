@@ -13,9 +13,9 @@
            </thead>
 
            <tbody>
-             <template v-if="slip[0]">
-               <tr v-for="item in slip">
-                   <td>{{ item.date }}</td>
+             <template v-if="records[0]">
+               <tr v-for="item in records">
+                   <td>{{ moment(item.date) }}</td>
                    <td>
                      <span v-if="item.period_of_day == 1">
                        Before 12PM
@@ -37,7 +37,10 @@
              </template>
             </tbody>
           </table>
+
         </div>
+        <slip-records-form :id='this.assslipid' @recordCreated="fetchRecords"></slip-records-form>
+
       </div>
 
 
@@ -45,11 +48,41 @@
 </template>
 
 <script>
+  import moment from 'moment'
   export default{
-    props: ['slip'],
+    props: ['assslipid'],
+    data: function() {
+      return {
+        records:[],
+        id: this.assslipid
+      }
+    },
+    created: function()
+    {
+        this.fetchRecords();
+    },
+
+
+
+    methods:{
+
+      moment: function(date){
+        return moment(date).format('DD/MM/YYYY');
+      },
+      fetchRecords()
+      {
+        //var id = this.assslipid;
+        let uri = 'http://tfonseca.uk/api/get-records';
+        axios.post(uri, {
+          id: this.assslipid,
+        }).then((response) => {
+            this.records = response.data.data;
+        });
+      },
+    },
     mounted () {
         // Do something useful with the data in the template
         console.log("Im in")
-    }
+    },
   }
 </script>
